@@ -2,8 +2,7 @@
 
 int main()
 {
-	Object obj("tak");
-	std::cout << obj.getFullPath();
+
 
 
 	return 0;
