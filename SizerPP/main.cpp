@@ -9,8 +9,8 @@ int main()
 	while (true)
 	{
 		menu(curr);
-
 	}
+
 
 	return 0;
 }

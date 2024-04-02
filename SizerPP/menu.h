@@ -2,6 +2,9 @@
 #include "current.h"
 #include <vector>
 #include <conio.h>
+#include <string>
+
+std::string byteConvert(uintmax_t bytes);
 
 void menu(Current& current);
 

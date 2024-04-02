@@ -1,5 +1,17 @@
 #include "menu.h"
 
+std::string byteConvert(uintmax_t bytes)
+{
+	if (bytes / 1000000000 > 0)
+		return "\033[3;33m" + std::to_string(bytes / 1000000000) + " GB\033[0m";
+	else if (bytes > 1000000 > 0)
+		return "\033[3;36m" + std::to_string(bytes / 1000000) + " MB\033[0m";
+	else if (bytes / 1000 > 0)
+		return "\033[3;35m" + std::to_string(bytes / 1000) + " KB\033[0m";
+	else
+		return "\033[3;34" + std::to_string(bytes) + " B\033[0m";
+}
+
 void menu(Current& current)
 {
 	size_t index = 0;
@@ -22,53 +34,59 @@ void menu(Current& current)
 	}
 	catch (std::exception& e)
 	{
-		std::cout << "\n{Отказано в доступе}\n";
-		current.getPath().concat("\\..");
+		current.getPath() = std::filesystem::path(current.getPath().parent_path());
+		std::cout << "\n" << e.what() << std::endl;
 		system("pause");
 		return;
 	}
 
+	std::cout << "^C-Copy ^V-Paste ^F-Find ^G-Volume\n\n";
 	std::filesystem::directory_entry tmp = menuPrint(current.getFolders(), current.getFiles(), index);
 
 	while (true)
 	{
-		if (_kbhit())
+		size_t key = _getch();
+
+		switch (key)
 		{
-			size_t key = _getch();
-
-			switch (key)
+		case 72:
+			if (index == 0)
+				index = current.getFolders().size() + current.getFiles().size() - 1;
+			else
+				index--;
+			break;
+		case 80:
+			if (index >= current.getFiles().size() + current.getFolders().size() - 1)
+				index = 0;
+			else
+				index++;
+			break;
+		case 6:
+		{
+			system("cls");
+			std::cout << "Enter path: ";
+			std::string tmp_str;
+			std::getline(std::cin, tmp_str, '\n');
+			current.getPath() = tmp_str;
+			return;
+		}
+		case 13:
+			if (tmp.is_directory())
 			{
-			case 72:
-				if (index == 0)
-					index = current.getFolders().size() + current.getFiles().size() - 1;
-				else
-					index--;
-				break;
-			case 80:
-				if (index >= current.getFiles().size() + current.getFolders().size() - 1)
-					index = 0;
-				else
-					index++;
-				break;
-
-			case 13:
-				if (tmp.is_directory())
-				{
-					current.getPath() = tmp.path();
-					return;
-				}
-				break;
-			default:
-				break;
+				current.getPath() = tmp.path();
+				return;
 			}
-
-
-			std::cout << "\u001b[H";
-			tmp = menuPrint(current.getFolders(), current.getFiles(), index);
-
+			break;
+		default:
+			break;
 		}
 
+		std::cout << "\u001b[H";
+		std::cout << "^C-Copy ^V-Paste ^F-Find ^G-Volume\n\n";
+		tmp = menuPrint(current.getFolders(), current.getFiles(), index);
+
 	}
+
 
 }
 
@@ -94,8 +112,16 @@ std::filesystem::directory_entry menuPrint(std::vector<std::filesystem::director
 			std::cout << "\u001b[48;5;17m";
 			dir_to_return = files.at(i);
 		}
-		std::cout << files.at(i).path().filename().string() << "\u001b[0m" << std::endl;
+		std::cout << files.at(i).path().filename().string()
+			<< "\033[0m\033[50G"
+			<< byteConvert(files.at(i).file_size())
+			<< "\033[0m"
+			<< "\033[100G"
+			<< files.at(i).last_write_time() << std::endl;
 	}
+
+	if (index == 0)
+		dir_to_return = std::filesystem::directory_entry(folders.at(0).path().parent_path().parent_path());
 
 	return dir_to_return;
 }
