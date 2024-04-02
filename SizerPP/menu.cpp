@@ -4,19 +4,31 @@ void menu(Current& current)
 {
 	size_t index = 0;
 
+	current.getFolders() = current.getFiles() = {};
 
-	std::vector<std::filesystem::directory_entry> folders, files;
+	current.getFolders().push_back(std::filesystem::directory_entry(current.getPath().string() + "\\.."));
 
-	for (auto i : std::filesystem::directory_iterator(current.getPath()))
+	try
 	{
-		if (i.is_directory())
-			folders.push_back(i);
-		else
-			files.push_back(i);
-	}
-	system("cls");
 
-	std::filesystem::directory_entry tmp = menuPrint(folders, files, index);
+		for (auto i : std::filesystem::directory_iterator(current.getPath()))
+		{
+			if (i.is_directory())
+				current.getFolders().push_back(i);
+			else
+				current.getFiles().push_back(i);
+		}
+		system("cls");
+	}
+	catch (std::exception& e)
+	{
+		std::cout << "\n{Отказано в доступе}\n";
+		current.getPath().concat("\\..");
+		system("pause");
+		return;
+	}
+
+	std::filesystem::directory_entry tmp = menuPrint(current.getFolders(), current.getFiles(), index);
 
 	while (true)
 	{
@@ -28,12 +40,12 @@ void menu(Current& current)
 			{
 			case 72:
 				if (index == 0)
-					index = folders.size() + files.size() - 1;
+					index = current.getFolders().size() + current.getFiles().size() - 1;
 				else
 					index--;
 				break;
 			case 80:
-				if (index >= files.size() + folders.size() - 1)
+				if (index >= current.getFiles().size() + current.getFolders().size() - 1)
 					index = 0;
 				else
 					index++;
@@ -43,13 +55,6 @@ void menu(Current& current)
 				if (tmp.is_directory())
 				{
 					current.getPath() = tmp.path();
-					menu(current);
-				}
-				break;
-			case 27:
-				if (tmp.path() != tmp.path().root_path())
-				{
-					current.getPath() = current.getPath().parent_path();
 					return;
 				}
 				break;
@@ -57,8 +62,9 @@ void menu(Current& current)
 				break;
 			}
 
-			system("cls");
-			menuPrint(folders, files, index);
+
+			std::cout << "\u001b[H";
+			tmp = menuPrint(current.getFolders(), current.getFiles(), index);
 
 		}
 
@@ -69,6 +75,7 @@ void menu(Current& current)
 std::filesystem::directory_entry menuPrint(std::vector<std::filesystem::directory_entry>& folders, std::vector<std::filesystem::directory_entry>& files, size_t& index)
 {
 	std::filesystem::directory_entry dir_to_return;
+
 
 	for (size_t i = 0; i < folders.size(); i++)
 	{
@@ -89,5 +96,6 @@ std::filesystem::directory_entry menuPrint(std::vector<std::filesystem::director
 		}
 		std::cout << files.at(i).path().filename().string() << "\u001b[0m" << std::endl;
 	}
+
 	return dir_to_return;
 }

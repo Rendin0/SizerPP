@@ -14,11 +14,22 @@ Current::Current(int mode)
 		path = std::filesystem::current_path();
 		break;
 	}
+	folders = files = {};
 }
 
-std::filesystem::directory_entry Current::getAll()
+std::filesystem::directory_entry Current::getEntry()
 {
 	return std::filesystem::directory_entry(path);
+}
+
+std::vector<std::filesystem::directory_entry>& Current::getFolders()
+{
+	return folders;
+}
+
+std::vector<std::filesystem::directory_entry>& Current::getFiles()
+{
+	return files;
 }
 
 uintmax_t Current::getAllSize()

@@ -6,7 +6,11 @@ int main()
 
 	Current curr(0);
 
-	menu(curr);
+	while (true)
+	{
+		menu(curr);
+
+	}
 
 	return 0;
 }
