@@ -3,6 +3,7 @@
 #include <vector>
 #include <conio.h>
 #include <string>
+#include "fstream"
 
 std::string byteConvert(uintmax_t bytes);
 

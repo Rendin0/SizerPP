@@ -40,7 +40,18 @@ void menu(Current& current)
 		return;
 	}
 
-	std::cout << "^C-Copy ^V-Paste ^F-Find ^G-Volume\n\n";
+	if (current.getFiles().size() + current.getFolders().size() > 65)
+	{
+		std::cout << "Warning, a lot of files. Esc - exit, Any - continue";
+		if (_getch() == 27)
+		{
+			current.getPath() = current.getPath().parent_path();
+			return;
+		}
+
+	}
+
+	std::cout << "^C-Copy ^V-Paste ^P-Path ^N-NewFile ^H-NewFolder ^R-Rename Del-Del\n\n";
 	std::filesystem::directory_entry tmp = menuPrint(current.getFolders(), current.getFiles(), index);
 
 	while (true)
@@ -61,7 +72,7 @@ void menu(Current& current)
 			else
 				index++;
 			break;
-		case 6:
+		case 16: // Ctrl + P
 		{
 			system("cls");
 			std::cout << "Enter path: ";
@@ -70,7 +81,55 @@ void menu(Current& current)
 			current.getPath() = tmp_str;
 			return;
 		}
-		case 13:
+		case 3: // Ctrl + C
+			current.getCopy() = tmp.path();
+			break;
+		case 22: // Ctrl + V
+			if (current.getCopy() == "0")
+				break;
+			if (!std::filesystem::directory_entry(current.getCopy()).exists())
+				break;
+
+			std::filesystem::copy(current.getCopy(), current.getPath().string() + "\\" + current.getCopy().filename().string());
+
+			return;
+		case 7: // Ctrl + G
+
+			break;
+		case 14: // Ctrl + N
+		{
+			system("cls");
+			std::cout << "Enter file name: ";
+			std::string name;
+			std::getline(std::cin, name);
+			std::ofstream f(current.getPath().string() + "\\" + name);
+			f.close();
+			return;
+		}
+		case 8: // Ctrl + H
+		{
+			system("cls");
+			std::cout << "Enter folder name: ";
+			std::string name;
+			std::getline(std::cin, name);
+			std::filesystem::create_directory(current.getPath().string() + "\\" + name);
+			return;
+		}
+		case 83: // Del
+			std::filesystem::remove_all(tmp.path());
+			return;
+		case 18: // Ctrl + R
+		{
+			system("cls");
+			std::cout << "Enter file name: ";
+			std::string name;
+			std::getline(std::cin, name);
+			std::filesystem::rename(tmp.path(), tmp.path().parent_path().concat("\\" + name));
+			return;
+		}
+		case 6: // Ctrl + F
+			break;
+		case 13: // Enter
 			if (tmp.is_directory())
 			{
 				current.getPath() = tmp.path();
@@ -82,7 +141,7 @@ void menu(Current& current)
 		}
 
 		std::cout << "\u001b[H";
-		std::cout << "^C-Copy ^V-Paste ^F-Find ^G-Volume\n\n";
+		std::cout << "^C-Copy ^V-Paste ^P-Path ^N-NewFile ^H-NewFolder ^R-Rename Del-Del\n\n";
 		tmp = menuPrint(current.getFolders(), current.getFiles(), index);
 
 	}

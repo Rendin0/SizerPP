@@ -15,6 +15,7 @@ Current::Current(int mode)
 		break;
 	}
 	folders = files = {};
+	copy = "0";
 }
 
 std::filesystem::directory_entry Current::getEntry()
@@ -30,6 +31,11 @@ std::vector<std::filesystem::directory_entry>& Current::getFolders()
 std::vector<std::filesystem::directory_entry>& Current::getFiles()
 {
 	return files;
+}
+
+std::filesystem::path& Current::getCopy()
+{
+	return copy;
 }
 
 uintmax_t Current::getAllSize()
